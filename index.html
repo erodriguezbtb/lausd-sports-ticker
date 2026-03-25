@@ -1,73 +1,19 @@
-<div class="ticker">
-  <div class="ticker-track" id="ticker"></div>
-</div>
-
-<style>
-.ticker {
-  overflow: hidden;
-  background: #e5e5e5;
-  padding: 8px 0;
-  font-family: Arial, sans-serif;
-}
-
-.ticker-track {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  animation: scroll 60s linear infinite;
-}
-
-.block {
-  padding: 10px 16px;
-  background: #2d7dbf;
-  color: white;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.game {
-  background: #f7f7f7;
-  border: 2px solid #333;
-  padding: 6px 10px;
-  min-width: 160px;
-}
-
-.final {
-  text-align: center;
-  font-size: 12px;
-  border-bottom: 1px solid #333;
-  margin-bottom: 4px;
-}
-
-.teams div {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-}
-
-.winner {
-  font-weight: bold;
-}
-
-@keyframes scroll {
-  from { transform: translateX(100%); }
-  to { transform: translateX(-100%); }
-}
-</style>
-
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoEVagIx-2UFRE2vpmQqMuegm29fuop_5p7yAQZ29RVn1Bi2kSTHNqtQ_-0gNvcbiB7clK1FZMzSzj/pub?output=csv";
 
 fetch(sheetURL)
   .then(response => response.text())
   .then(data => {
-    const rows = data.split("\n").slice(1);
+    const rows = data.trim().split("\n").slice(1);
     const container = document.getElementById("ticker");
 
     let currentSport = "";
 
     rows.forEach(row => {
-      const cols = row.split(",");
+      // Split AND clean quotes
+      const cols = row.split(",").map(c => c.replace(/"/g, "").trim());
+
+      if (cols.length < 6) return;
 
       const sport = cols[0];
       const team1 = cols[1];
@@ -86,7 +32,7 @@ fetch(sheetURL)
 
       if (parseInt(score1) > parseInt(score2)) {
         team1Class = "winner";
-      } else {
+      } else if (parseInt(score2) > parseInt(score1)) {
         team2Class = "winner";
       }
 
