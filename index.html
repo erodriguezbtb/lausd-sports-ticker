@@ -1,3 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LAUSD Sports Ticker</title>
+
+  <style>
+    body {
+      margin: 0;
+    }
+
+    .ticker {
+      overflow: hidden;
+      background: #d9d9d9;
+      padding: 6px 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .ticker-track {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      animation: scroll 80s linear infinite;
+    }
+
+    .block {
+      padding: 10px 18px;
+      background: #2d7dbf;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .game {
+      background: #ffffff;
+      border: 2px solid #333;
+      padding: 6px 12px;
+      min-width: 150px;
+    }
+
+    .final {
+      text-align: center;
+      font-size: 11px;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+      margin-bottom: 4px;
+    }
+
+    .teams div {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    .winner {
+      font-weight: bold;
+    }
+
+    @keyframes scroll {
+      from { transform: translateX(100%); }
+      to { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="ticker">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoEVagIx-2UFRE2vpmQqMuegm29fuop_5p7yAQZ29RVn1Bi2kSTHNqtQ_-0gNvcbiB7clK1FZMzSzj/pub?output=csv";
 
@@ -10,7 +82,6 @@ fetch(sheetURL)
     let currentSport = "";
 
     rows.forEach(row => {
-      // Split AND clean quotes
       const cols = row.split(",").map(c => c.replace(/"/g, "").trim());
 
       if (cols.length < 6) return;
@@ -46,5 +117,12 @@ fetch(sheetURL)
         </div>
       `;
     });
+  })
+  .catch(err => {
+    document.body.innerHTML = "Error loading data";
+    console.error(err);
   });
 </script>
+
+</body>
+</html>
