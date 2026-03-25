@@ -1,0 +1,104 @@
+<div class="ticker">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<style>
+.ticker {
+  overflow: hidden;
+  background: #e5e5e5;
+  padding: 8px 0;
+  font-family: Arial, sans-serif;
+}
+
+.ticker-track {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  animation: scroll 60s linear infinite;
+}
+
+.block {
+  padding: 10px 16px;
+  background: #2d7dbf;
+  color: white;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.game {
+  background: #f7f7f7;
+  border: 2px solid #333;
+  padding: 6px 10px;
+  min-width: 160px;
+}
+
+.final {
+  text-align: center;
+  font-size: 12px;
+  border-bottom: 1px solid #333;
+  margin-bottom: 4px;
+}
+
+.teams div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.winner {
+  font-weight: bold;
+}
+
+@keyframes scroll {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
+}
+</style>
+
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoEVagIx-2UFRE2vpmQqMuegm29fuop_5p7yAQZ29RVn1Bi2kSTHNqtQ_-0gNvcbiB7clK1FZMzSzj/pubhtml";
+
+fetch(sheetURL)
+  .then(response => response.text())
+  .then(data => {
+    const rows = data.split("\n").slice(1);
+    const container = document.getElementById("ticker");
+
+    let currentSport = "";
+
+    rows.forEach(row => {
+      const cols = row.split(",");
+
+      const sport = cols[0];
+      const team1 = cols[1];
+      const score1 = cols[2];
+      const team2 = cols[3];
+      const score2 = cols[4];
+      const status = cols[5];
+
+      if (sport !== currentSport) {
+        currentSport = sport;
+        container.innerHTML += `<div class="block">${sport}</div>`;
+      }
+
+      let team1Class = "";
+      let team2Class = "";
+
+      if (parseInt(score1) > parseInt(score2)) {
+        team1Class = "winner";
+      } else {
+        team2Class = "winner";
+      }
+
+      container.innerHTML += `
+        <div class="game">
+          <div class="final">${status}</div>
+          <div class="teams">
+            <div class="${team1Class}">${team1} ${score1}</div>
+            <div class="${team2Class}">${team2} ${score2}</div>
+          </div>
+        </div>
+      `;
+    });
+  });
+</script>
