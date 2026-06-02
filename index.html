@@ -47,11 +47,21 @@
       margin-bottom: 4px;
     }
 
-    .teams div {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-    }
+.team-row {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  align-items: center;
+  border-top: 1px solid #ccc;
+}
+
+.score {
+  text-align: center;
+  font-weight: bold;
+}
+
+.team-name {
+  padding-left: 8px;
+}
 
     .winner {
       font-weight: bold;
