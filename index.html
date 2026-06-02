@@ -117,17 +117,22 @@ fetch(sheetURL)
         team2Class = "winner";
       }
 
-      container.innerHTML += `
-        <div class="game">
-          <div class="final">${status}</div>
-          <div class="teams">
-            <div class="${team1Class}">${team1} ${score1}</div>
-            <div class="${team2Class}">${team2} ${score2}</div>
-          </div>
-        </div>
-      `;
-    });
-  })
+container.innerHTML += `
+  <div class="game">
+    <div class="final">${status}</div>
+
+    <div class="team-row ${team1Class}">
+      <div class="score">${score1}</div>
+      <div class="team-name">${team1}</div>
+    </div>
+
+    <div class="team-row ${team2Class}">
+      <div class="score">${score2}</div>
+      <div class="team-name">${team2}</div>
+    </div>
+
+  </div>
+`;
   .catch(err => {
     document.body.innerHTML = "Error loading data";
     console.error(err);
