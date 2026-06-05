@@ -1,142 +1,272 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>LAUSD Sports Ticker</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LAUSD Sports Ticker</title>
 
-  <style>
-    body {
-      margin: 0;
-    }
-
-    .ticker {
-      overflow: hidden;
-      background: #d9d9d9;
-      padding: 6px 0;
-      font-family: Arial, sans-serif;
-    }
-
-    .ticker-track {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-      animation: scroll 80s linear infinite;
-    }
-
-    .block {
-      padding: 10px 18px;
-      background: #2d7dbf;
-      color: white;
-      font-weight: bold;
-      font-size: 14px;
-      white-space: nowrap;
-    }
-
-    .game {
-      background: #ffffff;
-      border: 2px solid #333;
-      padding: 6px 12px;
-      min-width: 150px;
-    }
-
-    .final {
-      text-align: center;
-      font-size: 11px;
-      font-weight: bold;
-      border-bottom: 1px solid #333;
-      margin-bottom: 4px;
-    }
-
-.team-row {
-  display: grid;
-  grid-template-columns: 40px 1fr;
-  align-items: center;
-  border-top: 1px solid #ccc;
+<style>
+body{
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-.score {
-  text-align: center;
-  font-weight: bold;
+.ticker{
+    background:#e5e5e5;
+    border-top:1px solid #999;
+    border-bottom:1px solid #999;
+    overflow:hidden;
+    white-space:nowrap;
+    padding:8px 0;
 }
 
-.team-name {
-  padding-left: 8px;
+.track{
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    animation:scroll 90s linear infinite;
 }
 
-    .winner {
-      font-weight: bold;
-    }
+.group-header{
+    background:#2d7dbf;
+    color:white;
+    font-weight:bold;
+    padding:12px 16px;
+    text-transform:uppercase;
+    white-space:nowrap;
+}
 
-    @keyframes scroll {
-      from { transform: translateX(100%); }
-      to { transform: translateX(-100%); }
-    }
-  </style>
+.game-card{
+    background:white;
+    border:2px solid #555;
+    min-width:180px;
+}
+
+.final{
+    text-align:center;
+    font-size:12px;
+    font-weight:bold;
+    padding:4px;
+    border-bottom:1px solid #777;
+}
+
+.team-row{
+    display:grid;
+    grid-template-columns:40px 1fr;
+}
+
+.score{
+    background:#efefef;
+    border-right:1px solid #999;
+    text-align:center;
+    padding:6px 4px;
+    font-weight:bold;
+}
+
+.team{
+    background:#f8f8f8;
+    padding:6px 8px;
+}
+
+.winner .team{
+    font-weight:bold;
+}
+
+.vball-card{
+    background:white;
+    border:2px solid #555;
+    min-width:240px;
+}
+
+.vball-header{
+    display:grid;
+    grid-template-columns:40px 40px 40px 1fr;
+    border-bottom:1px solid #777;
+    text-align:center;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.vball-row{
+    display:grid;
+    grid-template-columns:40px 40px 40px 1fr;
+}
+
+.vball-row div{
+    padding:6px 4px;
+}
+
+.vscore{
+    background:#efefef;
+    text-align:center;
+    border-right:1px solid #ccc;
+    font-weight:bold;
+}
+
+.vteam{
+    background:#f8f8f8;
+    padding-left:8px !important;
+}
+
+.vwinner .vteam{
+    font-weight:bold;
+}
+
+@keyframes scroll{
+    from{transform:translateX(100%);}
+    to{transform:translateX(-100%);}
+}
+</style>
 </head>
-
 <body>
 
 <div class="ticker">
-  <div class="ticker-track" id="ticker"></div>
+    <div class="track" id="track"></div>
 </div>
 
 <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoEVagIx-2UFRE2vpmQqMuegm29fuop_5p7yAQZ29RVn1Bi2kSTHNqtQ_-0gNvcbiB7clK1FZMzSzj/pub?output=csv";
+const SCORES_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoEVagIx-2UFRE2vpmQqMuegm29fuop_5p7yAQZ29RVn1Bi2kSTHNqtQ_-0gNvcbiB7clK1FZMzSzj/pub?gid=0&single=true&output=csv";
+const VOLLEYBALL_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoEVagIx-2UFRE2vpmQqMuegm29fuop_5p7yAQZ29RVn1Bi2kSTHNqtQ_-0gNvcbiB7clK1FZMzSzj/pub?gid=583017185&single=true&output=csv";
 
-fetch(sheetURL)
-  .then(response => response.text())
-  .then(data => {
-    const rows = data.trim().split("\n").slice(1);
-    const container = document.getElementById("ticker");
+const track = document.getElementById("track");
 
-    let currentSport = "";
+function parseCSV(text){
+    return text.trim().split("\n").map(r => r.split(","));
+}
 
-    rows.forEach(row => {
-      const cols = row.split(",").map(c => c.replace(/"/g, "").trim());
+function addHeader(text){
+    track.insertAdjacentHTML("beforeend",
+        `<div class="group-header">${text}</div>`);
+}
 
-      if (cols.length < 6) return;
+function addScoreCard(team1,score1,team2,score2){
+    const s1 = Number(score1);
+    const s2 = Number(score2);
 
-      const sport = cols[0];
-      const team1 = cols[1];
-      const score1 = cols[2];
-      const team2 = cols[3];
-      const score2 = cols[4];
-      const status = cols[5];
+    const t1Class = s1 > s2 ? "winner" : "";
+    const t2Class = s2 > s1 ? "winner" : "";
 
-      if (sport !== currentSport) {
-        currentSport = sport;
-        container.innerHTML += `<div class="block">${sport}</div>`;
-      }
+    track.insertAdjacentHTML("beforeend",`
+        <div class="game-card">
+            <div class="final">FINAL</div>
 
-      let team1Class = "";
-      let team2Class = "";
+            <div class="team-row ${t1Class}">
+                <div class="score">${score1}</div>
+                <div class="team">${team1}</div>
+            </div>
 
-      if (parseInt(score1) > parseInt(score2)) {
-        team1Class = "winner";
-      } else if (parseInt(score2) > parseInt(score1)) {
-        team2Class = "winner";
-      }
+            <div class="team-row ${t2Class}">
+                <div class="score">${score2}</div>
+                <div class="team">${team2}</div>
+            </div>
+        </div>
+    `);
+}
 
-container.innerHTML += `
-  <div class="game">
-    <div class="final">${status}</div>
+function addVolleyballCard(team1,a1,a2,a3,team2,b1,b2,b3){
 
-    <div class="team-row ${team1Class}">
-      <div class="score">${score1}</div>
-      <div class="team-name">${team1}</div>
-    </div>
+    const totalA =
+        (Number(a1)||0)+(Number(a2)||0)+(Number(a3)||0);
 
-    <div class="team-row ${team2Class}">
-      <div class="score">${score2}</div>
-      <div class="team-name">${team2}</div>
-    </div>
+    const totalB =
+        (Number(b1)||0)+(Number(b2)||0)+(Number(b3)||0);
 
-  </div>
-`;
-  .catch(err => {
-    document.body.innerHTML = "Error loading data";
-    console.error(err);
-  });
+    const row1 = totalA > totalB ? "vwinner" : "";
+    const row2 = totalB > totalA ? "vwinner" : "";
+
+    track.insertAdjacentHTML("beforeend",`
+        <div class="vball-card">
+            <div class="final">FINAL</div>
+
+            <div class="vball-header">
+                <div>1</div>
+                <div>2</div>
+                <div>3</div>
+                <div></div>
+            </div>
+
+            <div class="vball-row ${row1}">
+                <div class="vscore">${a1||""}</div>
+                <div class="vscore">${a2||""}</div>
+                <div class="vscore">${a3||""}</div>
+                <div class="vteam">${team1}</div>
+            </div>
+
+            <div class="vball-row ${row2}">
+                <div class="vscore">${b1||""}</div>
+                <div class="vscore">${b2||""}</div>
+                <div class="vscore">${b3||""}</div>
+                <div class="vteam">${team2}</div>
+            </div>
+        </div>
+    `);
+}
+
+async function buildTicker(){
+
+    const scoresText = await fetch(SCORES_URL).then(r=>r.text());
+    const scores = parseCSV(scoresText);
+
+    let currentGroup = "";
+
+    scores.slice(1).forEach(row=>{
+
+        const level = row[0];
+        const sport = row[1];
+        const team1 = row[2];
+        const score1 = row[3];
+        const team2 = row[4];
+        const score2 = row[5];
+
+        const group = `${level} ${sport}`;
+
+        if(group !== currentGroup){
+            currentGroup = group;
+            addHeader(group);
+        }
+
+        addScoreCard(team1,score1,team2,score2);
+    });
+
+    const volleyballText = await fetch(VOLLEYBALL_URL).then(r=>r.text());
+    const vb = parseCSV(volleyballText);
+
+    currentGroup = "";
+
+    vb.slice(1).forEach(row=>{
+
+        const level = row[0];
+        const sport = row[1];
+
+        const team1 = row[2];
+        const set1a = row[3];
+        const set2a = row[4];
+        const set3a = row[5];
+
+        const team2 = row[6];
+        const set1b = row[7];
+        const set2b = row[8];
+        const set3b = row[9];
+
+        const group = `${level} ${sport}`;
+
+        if(group !== currentGroup){
+            currentGroup = group;
+            addHeader(group);
+        }
+
+        addVolleyballCard(
+            team1,set1a,set2a,set3a,
+            team2,set1b,set2b,set3b
+        );
+    });
+
+    track.innerHTML += track.innerHTML;
+}
+
+buildTicker();
 </script>
 
 </body>
