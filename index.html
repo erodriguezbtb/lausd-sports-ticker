@@ -26,7 +26,7 @@ body{
     display:inline-flex;
     align-items:center;
     gap:12px;
-    animation:scroll 60s linear infinite;
+    animation:scroll 45s linear infinite;
 }
 
 .group-header{
@@ -266,7 +266,7 @@ async function buildTicker(){
     track.innerHTML += track.innerHTML;
 }
 
-buildTicker();
+window.addEventListener("load", buildTicker);
 </script>
 
 </body>
